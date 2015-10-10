@@ -1,0 +1,99 @@
+<!DOCTYPE>
+<HTML>
+
+ <head>
+  <meta charset="UTF-8"/>
+  <title>Chat Room Test</title>
+  <style>
+   h1 {
+      text-align: center;
+   }
+   textarea {
+      width: 72em;
+      height: 500px;
+      resize: vertical;
+      border: 1px solid black;
+   }
+   input {
+      width: 72em;
+      font-family: monospace;
+      border: 1px solid black;
+   }
+  </style>
+ </head>
+
+ <body>
+  <h1>Chat Room Test</h1>
+  <textarea id="chatLog" readonly>---Chat Log---</textarea>
+  <br/>
+  Press Enter to send the message.
+  <br/>
+  <input id="messageInput" type="text" value="message here"/>
+  <script>
+   var chatLog = document.getElementById("chatLog");
+   var messageInput = document.getElementById("messageInput");
+
+   chatLog.value += "\n";
+
+   function sendMessage(messageText) {
+      var sendRequest;
+
+      if (window.XMLHttpRequest) {
+         sendRequest = new XMLHttpRequest();
+      } else { // Internet Explorer 5 or 6
+         sendRequest = new ActiveXObject("Microsoft.XMLHTTP");
+      }
+
+      var resource = "send.php?message=" + messageText;
+
+      sendRequest.open("GET", resource, true);
+      sendRequest.send();
+   }
+
+   function receiveMessage() {
+      var receiveRequest;
+
+      if (window.XMLHttpRequest) {
+         receiveRequest = new XMLHttpRequest();
+      } else { // Internet Explorer 5 or 6
+         recieveRequest = new ActiveXObject("Microsoft.XMLHTTP");
+      }
+
+      receiveRequest.onreadystatechange = function() {
+         console.log("readyState: " + receiveRequest.readyState);
+
+         if (receiveRequest.readyState == 4 && receiveRequest.status == 200) {
+            chatLog.value += receiveRequest.responseText + "\n";
+            chatLog.scrollTop = chatLog.scrollHeight;
+            receiveMessage();
+         }
+      }
+
+      receiveRequest.open("GET", "receive.php", true);
+      receiveRequest.send();
+   }
+
+   document.onload = receiveMessage();
+
+   function processMessage(event) {
+      var key;
+
+      if (window.event) { // Internet Explorer
+         key = event.keyCode;
+      } else {
+         key = event.which;
+      }
+
+      if (key == 13) { // Enter key
+         var message = messageInput.value + "\n";
+         sendMessage(message);
+         messageInput.value = "";
+      }
+   }
+
+   messageInput.onkeypress = processMessage;
+
+  </script>
+ </body>
+
+</HTML>
